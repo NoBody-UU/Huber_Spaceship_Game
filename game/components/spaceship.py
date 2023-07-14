@@ -1,4 +1,3 @@
-from typing import Any
 import  pygame
 from pygame.sprite import Sprite
 from game.utils.constants import SPACESHIP, SCREEN_HEIGHT, SCREEN_WIDTH
@@ -15,10 +14,14 @@ class Spaceship(Sprite):
         if user_input[pygame.K_LEFT]:
             if self.rect.left > 0:
               self.rect.x -= 10
+            else:
+                self.rect.x = SCREEN_WIDTH - 40
 
         elif user_input[pygame.K_RIGHT]:
             if self.rect.right < SCREEN_WIDTH:
               self.rect.x += 10
+            else:
+                self.rect.x = 0
         
         elif user_input[pygame.K_UP]:
             if self.rect.y > SCREEN_HEIGHT // 2:
