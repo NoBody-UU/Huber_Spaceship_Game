@@ -5,13 +5,12 @@ from game.components.enemies.enemy import Enemy
 class EnemyManager:
     def __init__(self):
         self.enemies: list[Enemy] = []
-        self.count = 0
 
-    def update(self):
+    def update(self, game):
         self.add_enemy()
 
         for enemy in self.enemies:
-            enemy.update(self.enemies)
+            enemy.update(self.enemies, game)
     
     def draw(self, screen):
         for enemy in self.enemies:
@@ -20,6 +19,7 @@ class EnemyManager:
     # NEW
     def add_enemy(self):
         if len(self.enemies) < 1:
-            enemy_type = 1 if self.count == 2 else 0
-            self.enemies.append(Enemy(enemy_type))
-            self.count = (self.count + 1) % 3
+            self.enemies.append(Enemy(random.randint(0, 1)))
+
+    def random_enemy_stats(self):
+        pass            
