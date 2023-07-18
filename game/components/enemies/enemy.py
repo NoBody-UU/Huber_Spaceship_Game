@@ -7,26 +7,26 @@ from game.components.bullets.bullet import Bullet
 
 class Enemy(Sprite):
     Y_POS = 10
-    SPEED_X = 5
-    SPEED_Y = 1
-    ENEMIES_IMG = [ENEMY_1, ENEMY_2]
     MOVEMENT_RIGHT = "right"
     MOVEMENT_LEFT = "left"
     MOV_X = {0: MOVEMENT_LEFT, 1: MOVEMENT_RIGHT}
-    def __init__(self, enemy_type=0):
-        self.image = self.ENEMIES_IMG[enemy_type]
+    def __init__(self, image=ENEMY_1, speed_x= 5, speed_y=1, move_x_for=randint(30, 40)):
+        # * NEW
+        self.enable = True
+        self.image = image
         self.image = pygame.transform.scale(self.image, (SHIP_WIDTH, SHIP_HEIGHT))
         self.rect = self.image.get_rect()
         self.rect.x = randint(0, SCREEN_WIDTH)
         self.rect.y = self.Y_POS
 
-        self.speed_x = self.SPEED_X
-        self.speed_y = self.SPEED_Y
+        self.speed_x = speed_x
+        self.speed_y = speed_y
         self.movement_x = self.MOV_X[randint(0, 1)]
-        self.move_x_for = randint(30, 40)
+        self.move_x_for = move_x_for
         self.step = 0
         self.type = "enemy"
-        self.shooting_time = randint(30, 50)
+        # * NEW
+        self.shooting_time = pygame.time.get_ticks() + randint(200, 500) 
 
     def update(self, enemies: list["Enemy"], game):
         self.rect.y += self.speed_y
@@ -37,23 +37,26 @@ class Enemy(Sprite):
         else:
             self.rect.x += self.speed_x
 
-        self.change_movement()
-
-        if self.rect.y >= SCREEN_HEIGHT:
+        self.change_movement(enemies)
+        
+        # * NEW
+        if self.rect.y >= SCREEN_HEIGHT or not self.enable:
             enemies.remove(self)
-
+    # * NEW
     def shoot(self, bullet_manager):
         current_time = pygame.time.get_ticks()
-        if self.shooting_time <= current_time:
+        if current_time >= self.shooting_time:
             bullet = Bullet(self)
             bullet_manager.add_bullet(bullet)
-            self.shooting_time += randint(20, 50)
+            self.shooting_time = current_time + randint(1000, 2000)
+
+
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
-    def change_movement(self):
-        self.step = (self.step + 1) % (self.move_x_for + 1)
+    def change_movement(self, enemies: list["Enemy"]):
+        self.step += 1
         if (self.step >= self.move_x_for and self.movement_x == self.MOVEMENT_RIGHT) or (self.rect.x >= SCREEN_WIDTH - SHIP_WIDTH):
             self.movement_x = self.MOVEMENT_LEFT
             self.step = 0

@@ -10,6 +10,12 @@ IMG_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
 SHIP_WIDTH = 40
 SHIP_HEIGHT = 60
 
+# Default Stast For Enemies
+SPEED_X_1 = 5
+SPEED_Y_1 = 1
+SPEED_X_2 = 6
+SPEED_Y_2 = 2
+
 # Assets Constants
 ICON = pygame.image.load(os.path.join(IMG_DIR, "Spaceship/spaceship.png"))
 
