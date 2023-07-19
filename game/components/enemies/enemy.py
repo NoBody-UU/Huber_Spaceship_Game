@@ -11,8 +11,6 @@ class Enemy(Sprite):
     MOVEMENT_LEFT = "left"
     MOV_X = {0: MOVEMENT_LEFT, 1: MOVEMENT_RIGHT}
     def __init__(self, image=ENEMY_1, speed_x= 5, speed_y=1, move_x_for=randint(30, 40)):
-        # * NEW
-        self.enable = True
         self.image = image
         self.image = pygame.transform.scale(self.image, (SHIP_WIDTH, SHIP_HEIGHT))
         self.rect = self.image.get_rect()
@@ -25,7 +23,6 @@ class Enemy(Sprite):
         self.move_x_for = move_x_for
         self.step = 0
         self.type = "enemy"
-        # * NEW
         self.shooting_time = pygame.time.get_ticks() + randint(200, 500) 
 
     def update(self, enemies: list["Enemy"], game):
@@ -39,10 +36,10 @@ class Enemy(Sprite):
 
         self.change_movement(enemies)
         
-        # * NEW
-        if self.rect.y >= SCREEN_HEIGHT or not self.enable:
+        
+        if self.rect.y >= SCREEN_HEIGHT:
             enemies.remove(self)
-    # * NEW
+    
     def shoot(self, bullet_manager):
         current_time = pygame.time.get_ticks()
         if current_time >= self.shooting_time:

@@ -15,7 +15,7 @@ class Spaceship(Sprite):
         self.rect.x = (SCREEN_WIDTH // 2) - SHIP_WIDTH
         self.rect.y = 500
         self.type = "player"
-    # NEW
+    
     def update(self, user_input, bullet_manager):
         if (user_input[pygame.K_SPACE]):
             self.shoot(bullet_manager)
@@ -31,7 +31,7 @@ class Spaceship(Sprite):
                 movement()
 
 
-    # NEW
+    
     def shoot(self, bullet_manager):
         bullet = Bullet(self)
         bullet_manager.add_bullet(bullet)
