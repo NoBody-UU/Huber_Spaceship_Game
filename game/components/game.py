@@ -13,6 +13,7 @@ class Game:
         pygame.display.set_icon(ICON)
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(FONT_STYLE, 30)
         self.playing = False
         self.game_speed = 10
         self.x_pos_bg = 0
@@ -23,6 +24,8 @@ class Game:
         self.running = False
         self.menu = Menu("Press any key to start...", self.screen)
         self.score = 0
+        self.higth_score = 0
+        self.total_deaths = 0
         self.death_count = 0
 
     def execute(self):
@@ -41,7 +44,6 @@ class Game:
             self.events()
             self.update()
             self.draw()
-
 
     def events(self):
         for event in pygame.event.get():
@@ -62,9 +64,9 @@ class Game:
         self.enemy_manager.draw(self.screen)
         self.bullet_manager.draw(self.screen)
         self.draw_score()
+        self.draw_lifes()
         pygame.display.update()
         pygame.display.flip()
-
 
     def draw_background(self):
         image = pygame.transform.scale(BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -76,24 +78,40 @@ class Game:
             self.y_pos_bg = 0
         self.y_pos_bg += self.game_speed
 
-
     def show_menu(self):
         self.menu.reset_screen_color(self.screen)
 
         if self.death_count == 0:
             self.menu.draw(self.screen)
         else:
-            self.menu.update_message("New Message")
-            self.menu.draw(self.screen)
+            self.game_over()
 
-        icon = self.image = pygame.transform.scale(ICON, (80, 120))
-        self.screen.blit(icon, ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2) - 150))
+        icon = pygame.transform.scale(ICON, (80, 120))
+        icon_rect = icon.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100))
+        self.screen.blit(icon, icon_rect)
 
         self.menu.update(self)
 
-    def draw_score(self):
-        font = pygame.font.Font(FONT_STYLE, 30)
-        text = font.render(f"Score: {self.score}", True, (0, 0, 0))
+    def set_font(self, font, size=30):
+        self.font = pygame.font.Font(font, size)
+
+    def draw_texts(self, message:str, center, color=(0, 0, 0)):
+        text = self.font.render(message, True, color)
         text_rect = text.get_rect()
-        text_rect.center = (1000 , 50)
+        text_rect.center = center
         self.screen.blit(text, text_rect)
+
+    def draw_score(self):
+        self.draw_texts(f"Score: {self.score}", (1000, 50), (255, 255, 255))
+
+    def draw_lifes(self):
+        self.draw_texts(f"Lifes: {3 - self.death_count}", (80, 50), (255, 255, 255))
+
+    def game_over(self):
+        self.higth_score = self.score if self.score > self.higth_score else self.higth_score
+        self.total_deaths += self.death_count
+        self.menu.draw_game_over_stats(self.higth_score, self.score, self.total_deaths, self.screen)
+        self.score = 0
+        self.death_count = 0
+        self.enemy_manager.remove_all_enemies()
+        self.player.respawn(self.screen)

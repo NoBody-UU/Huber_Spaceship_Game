@@ -57,3 +57,8 @@ class Spaceship(Sprite):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+    def respawn(self, screen):
+        self.rect.x = (SCREEN_WIDTH // 2) - SHIP_WIDTH
+        self.rect.y = 500
+        self.draw(screen)

@@ -42,7 +42,9 @@ class EnemyManager:
                 "speed_y": SPEED_Y_2,
                 "move_x_for": random.randint(40, 50)
             }
-        ]
-        
+        ]      
         return random.choice(enemies)
+    
+    def remove_all_enemies(self):
+        self.enemies = []
      
