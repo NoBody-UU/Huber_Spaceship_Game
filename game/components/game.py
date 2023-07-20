@@ -5,6 +5,7 @@ from game.components.spaceship import Spaceship
 from game.components.enemies.enemy_manager import EnemyManager
 from game.components.bullets.bullet_manager import BulletManager
 from game.components.menu import Menu
+from game.components.power_ups.power_up_manager import PowerUpManager
 
 class Game:
     def __init__(self):
@@ -21,6 +22,7 @@ class Game:
         self.player = Spaceship()
         self.enemy_manager = EnemyManager()
         self.bullet_manager = BulletManager()
+        self.power_up_manager = PowerUpManager()
         self.running = False
         self.menu = Menu("Press any key to start...", self.screen)
         self.score = 0
@@ -55,6 +57,7 @@ class Game:
         self.player.update(user_input, self.bullet_manager)
         self.enemy_manager.update(self)
         self.bullet_manager.update(self)
+        self.power_up_manager.update(self)
 
     def draw(self):
         self.clock.tick(FPS)
@@ -63,8 +66,10 @@ class Game:
         self.player.draw(self.screen)
         self.enemy_manager.draw(self.screen)
         self.bullet_manager.draw(self.screen)
+        self.power_up_manager.draw(self.screen)
         self.draw_score()
         self.draw_lifes()
+        self.draw_power_up_time()
         pygame.display.update()
         pygame.display.flip()
 
@@ -115,3 +120,14 @@ class Game:
         self.death_count = 0
         self.enemy_manager.remove_all_enemies()
         self.player.respawn(self.screen)
+
+    def draw_power_up_time(self):
+        if self.player.has_power_up:
+            time_to_show = round((self.player.power_time_up - pygame.time.get_ticks())/1000, 1)
+
+            if time_to_show >= 0:
+                self.menu.draw_texts(f"{self.player.power_up_type} is enable for {time_to_show} seconds", (540,50), screen=self.screen, color=(255, 255, 255))
+            else:
+                self.player.has_power_up = False
+                self.player.pow = DEFAULT_TYPE
+                self.player.set_image()
