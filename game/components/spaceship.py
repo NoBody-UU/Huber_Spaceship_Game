@@ -1,9 +1,10 @@
 import  pygame
 from pygame.sprite import Sprite
-from random import randint
 
 from game.utils.constants import SPACESHIP, SCREEN_HEIGHT, DEFAULT_TYPE, SCREEN_WIDTH, SHIP_HEIGHT, SHIP_WIDTH
 from game.components.bullets.bullet import Bullet
+
+
 class Spaceship(Sprite):
     X_POS = (SCREEN_WIDTH // 2) - SHIP_WIDTH
     Y_POS = 500
@@ -18,6 +19,7 @@ class Spaceship(Sprite):
         self.power_up_type = DEFAULT_TYPE
         self.has_power_up = False
         self.power_time_up = 0
+        self.lifes = 3
     
     def update(self, user_input, bullet_manager):
         movements = {
@@ -36,6 +38,7 @@ class Spaceship(Sprite):
     def shoot(self, bullet_manager):
         bullet = Bullet(self)
         bullet_manager.add_bullet(bullet)
+
             
   
     def move_left(self):

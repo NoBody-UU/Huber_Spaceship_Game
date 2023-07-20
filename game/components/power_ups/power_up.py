@@ -8,6 +8,7 @@ from game.utils.constants import SCREEN_HEIGHT
 class PowerUp(Sprite):
     def __init__(self, image, type):
         self.image = image
+        self.image = pygame.transform.scale(self.image, (40, 40))
         self.type = type
         self.rect = self.image.get_rect()
         self.rect.x = randint(100, SCREEN_HEIGHT - 100)

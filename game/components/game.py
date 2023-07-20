@@ -1,11 +1,12 @@
 import pygame
 
-from game.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE, FONT_STYLE
+from game.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE, FONT_STYLE, COLORS, HALF_SCREEN_HEIGHT, HALF_SCREEN_WIDTH, SOUND_MENU, SOUND_PLAYING, HEART, HEART_BLACK
 from game.components.spaceship import Spaceship
 from game.components.enemies.enemy_manager import EnemyManager
 from game.components.bullets.bullet_manager import BulletManager
 from game.components.menu import Menu
 from game.components.power_ups.power_up_manager import PowerUpManager
+from game.components.counter import Counter
 
 class Game:
     def __init__(self):
@@ -16,6 +17,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(FONT_STYLE, 30)
         self.playing = False
+        self.start_game = False
         self.game_speed = 10
         self.x_pos_bg = 0
         self.y_pos_bg = 0
@@ -24,11 +26,11 @@ class Game:
         self.bullet_manager = BulletManager()
         self.power_up_manager = PowerUpManager()
         self.running = False
-        self.menu = Menu("Press any key to start...", self.screen)
-        self.score = 0
-        self.higth_score = 0
-        self.total_deaths = 0
-        self.death_count = 0
+        self.menu = Menu(self.screen)
+        self.score = Counter()
+        self.higth_score = Counter()
+        self.player_lifes = Counter(3)
+        self.death_count = Counter()
 
     def execute(self):
         self.running = True
@@ -42,7 +44,12 @@ class Game:
     def run(self):
         # Game loop: events - update - draw
         self.playing = True
+        self.start_game =True
+        self.reset()
         while self.playing:
+            # TODO: Sound of playing
+            SOUND_PLAYING.play(volume=1, loop=True, channel=2)
+            SOUND_MENU.stop()
             self.events()
             self.update()
             self.draw()
@@ -61,7 +68,7 @@ class Game:
 
     def draw(self):
         self.clock.tick(FPS)
-        self.screen.fill((255, 255, 255))
+        self.screen.fill(COLORS["WHITE"])
         self.draw_background()
         self.player.draw(self.screen)
         self.enemy_manager.draw(self.screen)
@@ -84,15 +91,18 @@ class Game:
         self.y_pos_bg += self.game_speed
 
     def show_menu(self):
+        SOUND_PLAYING.stop()
+        SOUND_MENU.play(volume=0.5, loop=True, channel=0)
         self.menu.reset_screen_color(self.screen)
 
-        if self.death_count == 0:
-            self.menu.draw(self.screen)
+        if not self.start_game:
+            self.menu.draw_texts("Press ENTER to start...", (HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT - 10), self.screen)
+
         else:
             self.game_over()
 
         icon = pygame.transform.scale(ICON, (80, 120))
-        icon_rect = icon.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100))
+        icon_rect = icon.get_rect(center=(HALF_SCREEN_WIDTH, HALF_SCREEN_HEIGHT - 100))
         self.screen.blit(icon, icon_rect)
 
         self.menu.update(self)
@@ -100,33 +110,45 @@ class Game:
     def set_font(self, font, size=30):
         self.font = pygame.font.Font(font, size)
 
-    def draw_texts(self, message:str, center, color=(0, 0, 0)):
+    def draw_texts(self, message:str, center, color=COLORS["BLACK"]):
         text = self.font.render(message, True, color)
         text_rect = text.get_rect()
         text_rect.center = center
         self.screen.blit(text, text_rect)
 
     def draw_score(self):
-        self.draw_texts(f"Score: {self.score}", (1000, 50), (255, 255, 255))
+        self.draw_texts(f"Score: {self.score.get()}", (1000, 50), COLORS["WHITE"])
 
+    # TODO: Draw lifes
     def draw_lifes(self):
-        self.draw_texts(f"Lifes: {3 - self.death_count}", (80, 50), (255, 255, 255))
+        current_lives = self.player_lifes.get()
+        x_offset = 20
+        y = 50
+
+        for i in range(3):
+            heart_image = HEART if i < current_lives else HEART_BLACK
+            icon_rect = heart_image.get_rect(center=(x_offset, y))
+            self.screen.blit(heart_image, icon_rect)
+            x_offset += icon_rect.width + 5
+
 
     def game_over(self):
-        self.higth_score = self.score if self.score > self.higth_score else self.higth_score
-        self.total_deaths += self.death_count
-        self.menu.draw_game_over_stats(self.higth_score, self.score, self.total_deaths, self.screen)
-        self.score = 0
-        self.death_count = 0
-        self.enemy_manager.remove_all_enemies()
+        self.higth_score.set(self.score.get() if self.score.get() > self.higth_score.get() else self.higth_score.get())
+        self.menu.draw_game_over_stats(self.higth_score.get(), self.score.get(), self.death_count.get(), self.screen)
+
+    def reset(self):
+        self.power_up_manager.reset()
         self.player.respawn(self.screen)
+        self.enemy_manager.remove_all_enemies()
+        self.score.reset()
+        self.player_lifes.set(3)
 
     def draw_power_up_time(self):
         if self.player.has_power_up:
             time_to_show = round((self.player.power_time_up - pygame.time.get_ticks())/1000, 1)
 
             if time_to_show >= 0:
-                self.menu.draw_texts(f"{self.player.power_up_type} is enable for {time_to_show} seconds", (540,50), screen=self.screen, color=(255, 255, 255))
+                self.menu.draw_texts(f"{self.player.power_up_type} is enable for {time_to_show} seconds", (540,50), self.screen, COLORS["WHITE"])
             else:
                 self.player.has_power_up = False
                 self.player.pow = DEFAULT_TYPE
